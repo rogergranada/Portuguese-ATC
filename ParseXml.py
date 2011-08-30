@@ -97,7 +97,7 @@ class ParseXml:
 		try:
 			term = self.hash_t[id_t]
 		except:
-			print 'ERRO: Term with ID '+id_t+' was not found'
+			print 'ERROR: Term with ID '+id_t+' was not found'
 			sys.exit()
 		return term
 
@@ -108,7 +108,7 @@ class ParseXml:
 		try:
 			nonterminal = self.hash_nt[id_nt]
 		except:
-			print 'ERRO: Non terminal with ID '+id_nt+' was not found'
+			print 'ERROR: Non terminal with ID '+id_nt+' was not found'
 			sys.exit()
 		return nonterminal
 
@@ -125,7 +125,7 @@ class ParseXml:
 		try:
 			nts = self.hash_nts[id_nts]
 		except:
-			print 'ERRO: Non terminal structure with ID '+id_nts+' was not found'
+			print 'ERROR: Non terminal structure with ID '+id_nts+' was not found'
 			sys.exit()
 		return nts
 	
@@ -139,7 +139,7 @@ class ParseXml:
 		try:
 			term = self.hash_t[id_t]
 		except:
-			print 'ERRO: Term with ID '+id_t+' was not found'
+			print 'ERROR: Term with ID '+id_t+' was not found'
 			sys.exit()
 		print term
 
@@ -152,7 +152,7 @@ class ParseXml:
 		try:
 			nonterminal = self.hash_nt[id_nt]
 		except:
-			print 'ERRO: Non terminal with ID '+id_nt+' was not found'
+			print 'ERROR: Non terminal with ID '+id_nt+' was not found'
 			sys.exit()
 		print nonterminal
 
@@ -171,6 +171,6 @@ class ParseXml:
 		try:
 			nts = self.hash_nts[id_nts]
 		except:
-			print 'ERRO: Non terminal structure with ID '+id_nts+' was not found'
+			print 'ERROR: Non terminal structure with ID '+id_nts+' was not found'
 			sys.exit()
 		print nts
