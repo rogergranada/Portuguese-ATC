@@ -12,13 +12,18 @@ class SyntacticContexts:
 		self.filename_cg = filename+'.cg'
 		self.xml = ParseXml(self.filename_xml)
 		self.cg = ParseCg(self.filename_cg)
+
 		self.hash_t_xml = self.xml.getHashTerms()
-		self.hash_t_cg = {}
-		self.hash_nts = {}
+		self.hash_t_cg = self.cg.getHashTerms()
+		self.hash_nts = self.xml.getHashNTStructure()
+
 		self.hash_an = {}
 		self.hash_sv = {}
-		
-		self.__extractSVRelations__()
+		self.hash_vo = {}
+
+		self.mountANRelations = True
+		self.mountSVRelations = True
+		self.mountVORelations = True
 
 	def __extractANRelations__(self):
 		for id_t in self.hash_t_xml:
@@ -74,6 +79,7 @@ class SyntacticContexts:
 						self.__addElementHashAN__('adj_#'+self.hash_t_xml[id_1]['lemma']+'#'+self.hash_t_xml[id_t]['lemma'])
 	
 	def __addElementHashAN__(self, relation):
+		relation = relation.lower()
 		if self.hash_an.has_key(relation):
 			self.hash_an[relation] += 1
 		else:
@@ -82,11 +88,8 @@ class SyntacticContexts:
 	""" Extract relations for nouns when they are subjects of a verb as noun phrases (NP).
 	""" 
 	def __extractSVRelations__(self):
-		self.hash_t_cg = self.cg.getHashTerms()
-		self.hash_nts = self.xml.getHashNTStructure()
-
 		for id_t in self.hash_t_cg:
-			if self.hash_t_cg[id_t]['synt'] == '@SUBJ>' and re.match("^(n|prop)$", self.hash_t_xml[id_t]['pos']):
+			if (self.hash_t_cg[id_t]['synt'] == '@SUBJ>' or self.hash_t_cg[id_t]['synt'] == '@N<PRED') and re.match("^(n|prop)$", self.hash_t_xml[id_t]['pos']):
 				id_sentence = id_t.split("_")[0]
 				id_word = id_t.split("_")[1]
 				next_word = int(id_word) + 1
@@ -104,7 +107,7 @@ class SyntacticContexts:
 					next_word += 1
 					id_next_word = id_sentence+'_'+str(next_word)
 
-			if self.hash_t_cg[id_t]['synt'] == '@<SUBJ':
+			if self.hash_t_cg[id_t]['synt'] == '@<SUBJ' and re.match("^(n|prop)$", self.hash_t_xml[id_t]['pos']):
 				id_sentence = id_t.split("_")[0]
 				id_word = id_t.split("_")[1]
 				previous_word = int(id_word) - 1
@@ -112,10 +115,52 @@ class SyntacticContexts:
 				
 				while self.hash_t_cg.has_key(id_previous_word):
 					if 'v-' in self.hash_t_xml[id_previous_word]['pos']:
-						self.__addElementHashSV__('subj_#'+self.hash_t_cg[id_previous_word]['lemma']+'#'+self.hash_t_cg[id_t]['lemma'])
+						if self.hash_t_xml[id_t]['headof'] != '':
+							self.__addElementHashSV__('subj_#'+self.hash_t_cg[id_previous_word]['lemma']+'#'+self.hash_t_cg[id_t]['lemma'])
+							nounphrase = self.__cleanStructureToNP__(self.hash_nts[self.hash_t_xml[id_t]['headof']]['structure'])
+							self.__addElementHashSV__('subj_#'+self.hash_t_cg[id_previous_word]['lemma']+'#'+nounphrase)
+						else:
+							self.__addElementHashSV__('subj_#'+self.hash_t_cg[id_previous_word]['lemma']+'#'+self.hash_t_cg[id_t]['lemma'])
 						break
 					previous_word -= 1
 					id_previous_word = id_sentence+'_'+str(previous_word)
+
+	def __addElementHashSV__(self, relation):
+		relation = relation.lower()
+		if self.hash_sv.has_key(relation):
+			self.hash_sv[relation] += 1
+		else:
+			self.hash_sv[relation] = 1
+
+	""" Extract relations for nouns when they are the object of a verb as noun phrases (NP).
+	"""
+	def __extractVORelations__(self):
+		for id_t in self.hash_t_cg:
+			if (self.hash_t_cg[id_t]['synt'] == '@<ACC' or self.hash_t_cg[id_t]['synt'] == '@PRED>') and re.match("^(n|prop)$", self.hash_t_xml[id_t]['pos']):
+				id_sentence = id_t.split("_")[0]
+				id_word = id_t.split("_")[1]
+				previous_word = int(id_word) - 1
+				id_previous_word = id_sentence+'_'+str(previous_word)
+				
+				while self.hash_t_cg.has_key(id_previous_word):
+					if 'v-' in self.hash_t_xml[id_previous_word]['pos']:
+						if self.hash_t_xml[id_t]['headof'] != '':
+							self.__addElementHashVO__('obj_#'+self.hash_t_cg[id_previous_word]['lemma']+'#'+self.hash_t_cg[id_t]['lemma'])
+							nounphrase = self.__cleanStructureToNP__(self.hash_nts[self.hash_t_xml[id_t]['headof']]['structure'])
+							self.__addElementHashVO__('obj_#'+self.hash_t_cg[id_previous_word]['lemma']+'#'+nounphrase)
+						else:
+							self.__addElementHashVO__('obj_#'+self.hash_t_cg[id_previous_word]['lemma']+'#'+self.hash_t_cg[id_t]['lemma'])
+						break
+					previous_word -= 1
+					id_previous_word = id_sentence+'_'+str(previous_word)
+
+
+	def __addElementHashVO__(self, relation):
+		relation = relation.lower()
+		if self.hash_vo.has_key(relation):
+			self.hash_vo[relation] += 1
+		else:
+			self.hash_vo[relation] = 1
 
 	def __cleanStructureToNP__(self, noun_phrase):
 		np = list(noun_phrase)
@@ -134,29 +179,51 @@ class SyntacticContexts:
 		phrase = '';
 		for id_t in np:
 			phrase += self.hash_t_xml[id_t]['lemma']+' '
-		return phrase.replace(" --", ",	").rstrip()
+		phrase = phrase.replace(' --', ',').rstrip()
+		phrase = phrase.replace('-', '_')
+		phrase = phrase.replace(' ', '_')
+		phrase = phrase.replace(',,', ',')
+		return phrase
 
-	def __addElementHashSV__(self, relation):
-		if self.hash_sv.has_key(relation):
-			self.hash_sv[relation] += 1
-		else:
-			self.hash_sv[relation] = 1
 
-	""" Extract relations for nouns when they are objects of a verb as noun phrases (NP).
+	""" Get and Print methods
 	"""
-	#def __extractVORelations__(self):
-		#print self.hash_nts
 
 	def getHashAN(self):
+		if self.mountANRelations:
+			self.__extractANRelations__()
+			self.mountANRelations = False
 		return self.hash_an
 
 	def printHashAN(self):
+		if self.mountANRelations:
+			self.__extractANRelations__()
+			self.mountANRelations = False
 		for id_an in self.hash_an:
 			print id_an+' = '+str(self.hash_an[id_an])
 
 	def getHashSV(self):
+		if self.mountSVRelations:
+			self.__extractSVRelations__()
+			self.mountSVRelations = False
 		return self.hash_sv
 
 	def printHashSV(self):
+		if self.mountSVRelations:
+			self.__extractSVRelations__()
+			self.mountSVRelations = False
 		for id_sv in self.hash_sv:
 			print id_sv+' = '+str(self.hash_sv[id_sv])
+
+	def getHashVO(self):
+		if self.mountVORelations:
+			self.__extractVORelations__()
+			self.mountVORelations = False
+		return self.hash_vo
+
+	def printHashVO(self):
+		if self.mountVORelations:
+			self.__extractVORelations__()
+			self.mountVORelations = False
+		for id_vo in self.hash_vo:
+			print id_vo+' = '+str(self.hash_vo[id_vo])
