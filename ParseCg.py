@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import re
+import sys
 
 class ParseCg:
 
@@ -11,7 +12,12 @@ class ParseCg:
 
 	def __buildHash__(self, filename):
 		self.filename = filename
-		cgfile = open(filename, "r")
+		try:
+			cgfile = open(filename, "r")
+		except IOError:
+			print 'ERROR: System cannot open the '+filename+' file'
+			sys.exit()
+
 		sentence = 1
 		count_line = 1
 		for line in cgfile:
@@ -32,11 +38,29 @@ class ParseCg:
 				sentence = sentence + 1
 				count_line = 0
 			count_line = count_line + 1
+		
+		cgfile.close()
 
 	def getHashTerms(self):
 		return self.hash_t
+
+	def getTermsById(self, id_t):
+		try:
+			term = self.hash_t[id_t]
+		except:
+			print 'ERROR: Term with ID '+id_t+' was not found'
+			sys.exit()
+		return term
 
 	def printHashTerms(self):
 		for id_t in self.hash_t:
 			print 'Key: '+id_t
 			print self.hash_t[id_t]
+
+	def printTermsById(self, id_t):
+		try:
+			term = self.hash_t[id_t]
+		except:
+			print 'ERROR: Term with ID '+id_t+' was not found'
+			sys.exit()
+		print term
