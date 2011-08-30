@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import re
+import sys
 
 class ParseXml:
 
@@ -8,12 +9,18 @@ class ParseXml:
 		self.filename = filename
 		self.hash_t = {}
 		self.hash_nt = {}
-		self.hash_np = {}
+		self.hash_nts = {}
 		self.__buildHashs__(filename)
+		self.buidStructure = True
 
 	def __buildHashs__(self, filename):
 		self.filename = filename
-		xmlfile = open(filename, "r")
+		try:
+			xmlfile = open(filename, "r")
+		except IOError:
+			print 'ERROR: System cannot open the '+filename+' file'
+			sys.exit()
+
 		for line in xmlfile:
 			if '<t ' in line:
 				id_t = re.search('(?<=id=")\w+', line).group(0)
@@ -53,10 +60,9 @@ class ParseXml:
 			elif '</nt>' in line:
 				self.hash_nt[id_nt]['edge'] = array_edges	
 				
-		xmlfile.close();
+		xmlfile.close()
 
 	def __buildNonTerminalStructure__(self):
-		print len(self.hash_nt)
 		for id_nt in self.hash_nt:
 			list_np = []
 			for idref in self.hash_nt[id_nt]['edge']:
@@ -76,17 +82,52 @@ class ParseXml:
 					inner_count = inner_count - 1
 				inner_count = inner_count + 1
 
-			self.hash_np[id_nt] = list_np
+			self.hash_nts[id_nt] = {'structure': list_np}
+
+		for id_nts in self.hash_nts:
+			phrase = ''
+			for id_t in self.hash_nts[id_nts]['structure']:
+				phrase += self.hash_t[id_t]['lemma']+' '
+			self.hash_nts[id_nts]['phrase'] = phrase.rstrip()
 
 	def getHashTerms(self):
 		return self.hash_t
 
+	def getTermsById(self, id_t):
+		try:
+			term = self.hash_t[id_t]
+		except:
+			print 'ERRO: Term with ID '+id_t+' was not found'
+			sys.exit()
+		return term
+
 	def getHashNonTerminals(self):
 		return self.hash_nt
 
-	def getHashNounPhrases(self):
-		self.__buildNonTerminalStructure__()
-		return self.hash_np
+	def getNonTerminalsById(self, id_nt):
+		try:
+			nonterminal = self.hash_nt[id_nt]
+		except:
+			print 'ERRO: Non terminal with ID '+id_nt+' was not found'
+			sys.exit()
+		return nonterminal
+
+	def getHashNTStructure(self):
+		if self.buidStructure:
+			self.__buildNonTerminalStructure__()
+			self.buidStructure = False
+		return self.hash_nts
+
+	def getNTStructureById(self, id_nts):
+		if self.buidStructure:
+			self.__buildNonTerminalStructure__()
+			self.buidStructure = False
+		try:
+			nts = self.hash_nts[id_nts]
+		except:
+			print 'ERRO: Non terminal structure with ID '+id_nts+' was not found'
+			sys.exit()
+		return nts
 	
 	def printHashTerms(self):
 		for id_t in self.hash_t:
@@ -94,17 +135,42 @@ class ParseXml:
 			print self.hash_t[id_t]
 			print '\n'
 
+	def printTermsById(self, id_t):
+		try:
+			term = self.hash_t[id_t]
+		except:
+			print 'ERRO: Term with ID '+id_t+' was not found'
+			sys.exit()
+		print term
+
 	def printHashNonTerminals(self):
 		for id_nt in self.hash_nt:
 			print 'Key: '+id_nt
 			print self.hash_nt[id_nt]
 
-	def printHashNounPhrases(self):
-		self.__buildNonTerminalStructure__()
-		for id_np in self.hash_np:
-			print 'Key: '+id_np
-			print self.hash_np[id_np]
+	def printNonTerminalsById(self, id_nt):
+		try:
+			nonterminal = self.hash_nt[id_nt]
+		except:
+			print 'ERRO: Non terminal with ID '+id_nt+' was not found'
+			sys.exit()
+		print nonterminal
 
+	def printHashNTStructure(self):
+		if self.buidStructure:
+			self.__buildNonTerminalStructure__()
+			self.buidStructure = False
+		for id_nts in self.hash_nts:
+			print 'Key: '+id_nts
+			print self.hash_nts[id_nts]
 
-
-
+	def printNTStructureById (self, id_nts):
+		if self.buidStructure:
+			self.__buildNonTerminalStructure__()
+			self.buidStructure = False
+		try:
+			nts = self.hash_nts[id_nts]
+		except:
+			print 'ERRO: Non terminal structure with ID '+id_nts+' was not found'
+			sys.exit()
+		print nts
