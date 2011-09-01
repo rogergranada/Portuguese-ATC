@@ -5,16 +5,15 @@ import sys
 
 class ParseXml:
 
-	def __init__(self, filename):		
-		self.filename = filename
-		self.hash_t = {}
-		self.hash_nt = {}
-		self.hash_nts = {}
-		self.__buildHashs__(filename)
+	def __init__(self, filename):
+		self.dic_t = {}
+		self.dic_nt = {}
+		self.dic_nts = {}
+		self.__buildDics__(filename)
 		self.buidStructure = True
 
-	def __buildHashs__(self, filename):
-		self.filename = filename
+	def __buildDics__(self, filename):
+		filename = filename
 		try:
 			xmlfile = open(filename, "r")
 		except IOError:
@@ -35,14 +34,14 @@ class ParseXml:
 				else:
 					pos = re.search('(?<=pos=")\S+', line).group(0)[0:-1]
 
-				self.hash_t[id_t] = {'word':word, 'lemma':lemma, 'pos':pos, 'morph':morph, 'sem':sem, 'extra':extra, 'headof':''}
+				self.dic_t[id_t] = {'word':word, 'lemma':lemma, 'pos':pos, 'morph':morph, 'sem':sem, 'extra':extra, 'headof':''}
 				
 			elif '<nt ' in line:
 				id_nt = re.search('(?<=id=")\w+', line).group(0)
 				id_nt_number = int(re.search('(?<=_)\w+', line).group(0))
 				cat = re.search('(?<=cat=")\w+', line).group(0)
 				array_edges = []
-				self.hash_nt[id_nt] = {'cat':cat, 'edge':array_edges}
+				self.dic_nt[id_nt] = {'cat':cat, 'edge':array_edges}
 				
 			
 			elif '<edge ' in line:
@@ -54,18 +53,18 @@ class ParseXml:
 					array_edges.append([idref, label])
 
 				if 'H' in label:
-					self.hash_t[idref]['headof'] = id_nt
-					self.hash_nt[id_nt]['head'] = idref
+					self.dic_t[idref]['headof'] = id_nt
+					self.dic_nt[id_nt]['head'] = idref
 
 			elif '</nt>' in line:
-				self.hash_nt[id_nt]['edge'] = array_edges	
+				self.dic_nt[id_nt]['edge'] = array_edges	
 				
 		xmlfile.close()
 
 	def __buildNonTerminalStructure__(self):
-		for id_nt in self.hash_nt:
+		for id_nt in self.dic_nt:
 			list_np = []
-			for idref in self.hash_nt[id_nt]['edge']:
+			for idref in self.dic_nt[id_nt]['edge']:
 				list_np.append(idref[0])
 			
 			inner_count = 0
@@ -76,100 +75,100 @@ class ParseXml:
 				if idref_number > 500:
 					list_np.pop(inner_count)
 					temp_count = inner_count
-					for idref_inner in self.hash_nt[idref]['edge']:
+					for idref_inner in self.dic_nt[idref]['edge']:
 						list_np.insert(temp_count, idref_inner[0])
 						temp_count = temp_count + 1					
 					inner_count = inner_count - 1
 				inner_count = inner_count + 1
 
-			self.hash_nts[id_nt] = {'structure': list_np}
+			self.dic_nts[id_nt] = {'structure': list_np}
 
-		for id_nts in self.hash_nts:
+		for id_nts in self.dic_nts:
 			phrase = ''
-			for id_t in self.hash_nts[id_nts]['structure']:
-				phrase += self.hash_t[id_t]['lemma']+' '
-			self.hash_nts[id_nts]['phrase'] = phrase.rstrip()
+			for id_t in self.dic_nts[id_nts]['structure']:
+				phrase += self.dic_t[id_t]['lemma']+' '
+			self.dic_nts[id_nts]['phrase'] = phrase.rstrip()
 
-	def getHashTerms(self):
-		return self.hash_t
+	def getDicTerms(self):
+		return self.dic_t
 
 	def getTermsById(self, id_t):
 		try:
-			term = self.hash_t[id_t]
+			term = self.dic_t[id_t]
 		except:
 			print 'ERROR: Term with ID '+id_t+' was not found'
 			sys.exit()
 		return term
 
-	def getHashNonTerminals(self):
-		return self.hash_nt
+	def getDicNonTerminals(self):
+		return self.dic_nt
 
 	def getNonTerminalsById(self, id_nt):
 		try:
-			nonterminal = self.hash_nt[id_nt]
+			nonterminal = self.dic_nt[id_nt]
 		except:
 			print 'ERROR: Non terminal with ID '+id_nt+' was not found'
 			sys.exit()
 		return nonterminal
 
-	def getHashNTStructure(self):
+	def getDicNTStructure(self):
 		if self.buidStructure:
 			self.__buildNonTerminalStructure__()
 			self.buidStructure = False
-		return self.hash_nts
+		return self.dic_nts
 
 	def getNTStructureById(self, id_nts):
 		if self.buidStructure:
 			self.__buildNonTerminalStructure__()
 			self.buidStructure = False
 		try:
-			nts = self.hash_nts[id_nts]
+			nts = self.dic_nts[id_nts]
 		except:
 			print 'ERROR: Non terminal structure with ID '+id_nts+' was not found'
 			sys.exit()
 		return nts
 	
-	def printHashTerms(self):
-		for id_t in self.hash_t:
+	def printDicTerms(self):
+		for id_t in self.dic_t:
 			print 'Key: '+id_t
-			print self.hash_t[id_t]
+			print self.dic_t[id_t]
 			print '\n'
 
 	def printTermsById(self, id_t):
 		try:
-			term = self.hash_t[id_t]
+			term = self.dic_t[id_t]
 		except:
 			print 'ERROR: Term with ID '+id_t+' was not found'
 			sys.exit()
 		print term
 
-	def printHashNonTerminals(self):
-		for id_nt in self.hash_nt:
+	def printDicNonTerminals(self):
+		for id_nt in self.dic_nt:
 			print 'Key: '+id_nt
-			print self.hash_nt[id_nt]
+			print self.dic_nt[id_nt]
 
 	def printNonTerminalsById(self, id_nt):
 		try:
-			nonterminal = self.hash_nt[id_nt]
+			nonterminal = self.dic_nt[id_nt]
 		except:
 			print 'ERROR: Non terminal with ID '+id_nt+' was not found'
 			sys.exit()
 		print nonterminal
 
-	def printHashNTStructure(self):
+	def printDicNTStructure(self):
 		if self.buidStructure:
 			self.__buildNonTerminalStructure__()
 			self.buidStructure = False
-		for id_nts in self.hash_nts:
+		for id_nts in self.dic_nts:
 			print 'Key: '+id_nts
-			print self.hash_nts[id_nts]
+			print self.dic_nts[id_nts]
 
 	def printNTStructureById (self, id_nts):
 		if self.buidStructure:
 			self.__buildNonTerminalStructure__()
 			self.buidStructure = False
 		try:
-			nts = self.hash_nts[id_nts]
+			nts = self.dic_nts[id_nts]
 		except:
 			print 'ERROR: Non terminal structure with ID '+id_nts+' was not found'
 			sys.exit()
