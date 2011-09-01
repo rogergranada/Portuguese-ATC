@@ -4,14 +4,11 @@ import re
 import sys
 
 class ParseCg:
-
 	def __init__(self, filename):		
-		self.filename = filename
-		self.hash_t = {}
-		self.__buildHash__(filename)
+		self.dic_t = {}
+		self.__buildDic__(filename)
 
-	def __buildHash__(self, filename):
-		self.filename = filename
+	def __buildDic__(self, filename):
 		try:
 			cgfile = open(filename, "r")
 		except IOError:
@@ -30,10 +27,10 @@ class ParseCg:
 				else:
 					extra = ((line.split('@')[0]).split(']')[-1]).strip()
 				synt = ('@'+line.split('@')[1]).rstrip('\n ')
-				self.hash_t[id_t] = {'word':word, 'lemma':lemma, 'synt':synt, 'extra':extra}
+				self.dic_t[id_t] = {'word':word, 'lemma':lemma, 'synt':synt, 'extra':extra}
 			elif '$' in line:
 				word = line[1]
-				self.hash_t[id_t] = {'word':word, 'lemma':'--', 'synt':'--', 'extra':'--'}
+				self.dic_t[id_t] = {'word':word, 'lemma':'--', 'synt':'--', 'extra':'--'}
 			elif '</s>' in line:
 				sentence = sentence + 1
 				count_line = 0
@@ -41,25 +38,25 @@ class ParseCg:
 		
 		cgfile.close()
 
-	def getHashTerms(self):
-		return self.hash_t
+	def getDicTerms(self):
+		return self.dic_t
 
 	def getTermsById(self, id_t):
 		try:
-			term = self.hash_t[id_t]
+			term = self.dic_t[id_t]
 		except:
 			print 'ERROR: Term with ID '+id_t+' was not found'
 			sys.exit()
 		return term
 
-	def printHashTerms(self):
-		for id_t in self.hash_t:
+	def printDicTerms(self):
+		for id_t in self.dic_t:
 			print 'Key: '+id_t
-			print self.hash_t[id_t]
+			print self.dic_t[id_t]
 
 	def printTermsById(self, id_t):
 		try:
-			term = self.hash_t[id_t]
+			term = self.dic_t[id_t]
 		except:
 			print 'ERROR: Term with ID '+id_t+' was not found'
 			sys.exit()
