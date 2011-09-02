@@ -9,13 +9,18 @@ class ParseXml:
 		self.dic_t = {}
 		self.dic_nt = {}
 		self.dic_nts = {}
-		self.__buildDics__(filename)
+		self.dic_nouns = {}
+		self.dic_verbs = {}
+		
 		self.buidStructure = True
+		self.buidNouns = True
+		self.buidVerbs = True
+
+		self.__buildDics__(filename)
 
 	def __buildDics__(self, filename):
-		filename = filename
 		try:
-			xmlfile = open(filename, "r")
+			xmlfile = open(filename, 'r')
 		except IOError:
 			print 'ERROR: System cannot open the '+filename+' file'
 			sys.exit()
@@ -42,7 +47,6 @@ class ParseXml:
 				cat = re.search('(?<=cat=")\w+', line).group(0)
 				array_edges = []
 				self.dic_nt[id_nt] = {'cat':cat, 'edge':array_edges}
-				
 			
 			elif '<edge ' in line:
 				idref = re.search('(?<=idref=")\w+', line).group(0)
@@ -58,7 +62,7 @@ class ParseXml:
 
 			elif '</nt>' in line:
 				self.dic_nt[id_nt]['edge'] = array_edges	
-				
+
 		xmlfile.close()
 
 	def __buildNonTerminalStructure__(self):
@@ -89,6 +93,20 @@ class ParseXml:
 				phrase += self.dic_t[id_t]['lemma']+' '
 			self.dic_nts[id_nts]['phrase'] = phrase.rstrip()
 
+		self.buidStructure = False
+
+	def __buildDicNouns__(self):
+		for id_t in self.dic_t:
+			if re.match('^(n|prop)$', self.dic_t[id_t]['pos']):
+				self.dic_nouns[id_t] = self.dic_t[id_t]['lemma']
+		self.buidNouns = False
+	
+	def __buildDicVerbs__(self):
+		for id_t in self.dic_t:
+			if re.match('^v-', self.dic_t[id_t]['pos']):
+				self.dic_verbs[id_t] = self.dic_t[id_t]['lemma']
+		self.buidVerbs = False
+
 	def getDicTerms(self):
 		return self.dic_t
 
@@ -114,19 +132,27 @@ class ParseXml:
 	def getDicNTStructure(self):
 		if self.buidStructure:
 			self.__buildNonTerminalStructure__()
-			self.buidStructure = False
 		return self.dic_nts
 
 	def getNTStructureById(self, id_nts):
 		if self.buidStructure:
 			self.__buildNonTerminalStructure__()
-			self.buidStructure = False
 		try:
 			nts = self.dic_nts[id_nts]
 		except:
 			print 'ERROR: Non terminal structure with ID '+id_nts+' was not found'
 			sys.exit()
 		return nts
+
+	def getNouns(self):
+		if self.buidNouns:
+			self.__buildDicNouns__()
+		return self.dic_nouns
+
+	def getVerbs(self):
+		if self.buidVerbs:
+			self.__buildDicVerbs__()
+		return self.dic_verbs
 	
 	def printDicTerms(self):
 		for id_t in self.dic_t:
@@ -158,7 +184,6 @@ class ParseXml:
 	def printDicNTStructure(self):
 		if self.buidStructure:
 			self.__buildNonTerminalStructure__()
-			self.buidStructure = False
 		for id_nts in self.dic_nts:
 			print 'Key: '+id_nts
 			print self.dic_nts[id_nts]
@@ -166,10 +191,23 @@ class ParseXml:
 	def printNTStructureById (self, id_nts):
 		if self.buidStructure:
 			self.__buildNonTerminalStructure__()
-			self.buidStructure = False
 		try:
 			nts = self.dic_nts[id_nts]
 		except:
 			print 'ERROR: Non terminal structure with ID '+id_nts+' was not found'
 			sys.exit()
 		print nts
+
+	def printNouns(self):
+		if self.buidNouns:
+			self.__buildDicNouns__()
+		for id_noun in self.dic_nouns:
+			print 'Key: '+id_noun
+			print self.dic_nouns[id_noun]
+
+	def printVerbs(self):
+		if self.buidVerbs:
+			self.__buildDicVerbs__()
+		for id_verb in self.dic_verbs:
+			print 'Key: '+id_verb
+			print self.dic_verbs[id_verb]
