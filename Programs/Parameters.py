@@ -16,8 +16,8 @@ class Parameters:
 			sys.exit()
 
 		for line in file_parameters:
-			if re.match('max_qtd_terms', line):
-				self.dic_parameters['max_qtd_terms'] = line.split('=')[1].replace('\n','')
+			if re.match('max_qty_terms', line):
+				self.dic_parameters['max_qty_terms'] = line.split('=')[1].replace('\n','')
 			if re.match('min_freq_t3', line):
 				self.dic_parameters['min_freq_t3'] = line.split('=')[1].replace('\n','')
 			if re.match('svd_treshold', line):
@@ -29,8 +29,8 @@ class Parameters:
 			if re.match('window_size', line):
 				self.dic_parameters['window_size'] = line.split('=')[1].replace('\n','')
 
-	def getMaxQtdTerms(self):
-		return self.dic_parameters['max_qtd_terms']
+	def getMaxQtyTerms(self):
+		return self.dic_parameters['max_qty_terms']
 
 	def getMinFreqT3(self):
 		return self.dic_parameters['min_freq_t3']
@@ -47,11 +47,14 @@ class Parameters:
 	def getWindowSize(self):
 		return self.dic_parameters['window_size']
 
+	def getDicParameters(self):
+		return self.dic_parameters
+
 	def printDicParameters(self):
 		print self.dic_parameters
 
-	def setMaxQtdTerms(self, qtd_terms):
-		self.dic_parameters['max_qtd_terms'] = qtd_terms
+	def setMaxQtyTerms(self, qtd_terms):
+		self.dic_parameters['max_qty_terms'] = qtd_terms
 
 	def setMinFreqT3(self, freq):
 		self.dic_parameters['min_freq_t3'] = freq
