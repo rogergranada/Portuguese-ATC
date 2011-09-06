@@ -35,7 +35,6 @@ class ParseCg:
 				sentence = sentence + 1
 				count_line = 0
 			count_line = count_line + 1
-		
 		cgfile.close()
 
 	def getDicTerms(self):
