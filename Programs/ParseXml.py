@@ -27,42 +27,42 @@ class ParseXml:
 
 		for line in xmlfile:
 			if '<t ' in line:
-				id_t = re.search('(?<=id=")\w+', line).group(0)
-				word = re.search('(?<=word=")\S+', line).group(0)[0:-1].lower()
-				lemma = re.search('(?<=lemma=")\S+', line).group(0)[0:-1].lower()
-				morph = re.search('(?<=morph=")[\w -]+', line).group(0)
-				sem = re.search('(?<=sem=")[\w -]+', line).group(0)
-				extra = re.search('(?<=extra=")[\w -]+', line).group(0)
+				id_t = (line.split('id=\"')[1]).split('\"')[0]
+				word = (line.split('word=\"')[1]).split('\"')[0].lower()
+				lemma = ((line.split('lemma=\"')[1]).split('\"')[0]).lower()
+				morph = (line.split('morph=\"')[1]).split('\"')[0]
+				sem = (line.split('sem=\"')[1]).split('\"')[0]
+				extra = (line.split('extra=\"')[1]).split('\"')[0]
 				
 				if re.search('%|&amp;', lemma):
 					pos = '--' 
 				else:
-					pos = re.search('(?<=pos=")\S+', line).group(0)[0:-1]
+					pos = (line.split('pos=\"')[1]).split('\"')[0]
 
 				self.dic_t[id_t] = {'word':word, 'lemma':lemma, 'pos':pos, 'morph':morph, 'sem':sem, 'extra':extra, 'headof':''}
 				
 			elif '<nt ' in line:
-				id_nt = re.search('(?<=id=")\w+', line).group(0)
-				id_nt_number = int(re.search('(?<=_)\w+', line).group(0))
-				cat = re.search('(?<=cat=")\w+', line).group(0)
+				id_nt = (line.split('id=\"')[1]).split('\"')[0]
+				id_nt_number = id_nt.split('_')[1]
+				cat = (line.split('cat=\"')[1]).split('\"')[0]
 				array_edges = []
 				self.dic_nt[id_nt] = {'cat':cat, 'edge':array_edges}
 			
 			elif '<edge ' in line:
-				idref = re.search('(?<=idref=")\w+', line).group(0)
-				idref_number = int(re.search('(?<=_)\w+', line).group(0))
-				label = re.search('(?<=label=")\w+', line).group(0)
-
-				if idref_number < 500 or idref_number > id_nt_number:
+				
+				idref = (line.split('idref=\"')[1]).split('\"')[0]
+				idref_number = idref.split('_')[1]
+				label = (line.split('label=\"')[1]).split('\"')[0]
+				if int(idref_number) < 500 or int(idref_number) > int(id_nt_number):
 					array_edges.append([idref, label])
-
-				if 'H' in label:
+				
+				if label == 'H':
 					self.dic_t[idref]['headof'] = id_nt
 					self.dic_nt[id_nt]['head'] = idref
 
 			elif '</nt>' in line:
-				self.dic_nt[id_nt]['edge'] = array_edges	
-
+				self.dic_nt[id_nt]['edge'] = array_edges
+		
 		xmlfile.close()
 
 	def __buildNonTerminalStructure__(self):
@@ -76,7 +76,7 @@ class ParseXml:
 				idref = list_np[inner_count]
 				idref_number = int(list_np[inner_count].split('_')[1])
 				
-				if idref_number > 500:
+				if int(idref_number) > 500:
 					list_np.pop(inner_count)
 					temp_count = inner_count
 					for idref_inner in self.dic_nt[idref]['edge']:
@@ -149,10 +149,26 @@ class ParseXml:
 			self.__buildDicNouns__()
 		return self.dic_nouns
 
+	def getListNouns(self):
+		if self.buidNouns:
+			self.__buildDicNouns__()
+		list_nouns = {}
+		for id_t in self.dic_nouns:
+			list_nouns[self.dic_nouns[id_t]] = self.dic_nouns[id_t]
+		return list_nouns
+
 	def getVerbs(self):
 		if self.buidVerbs:
 			self.__buildDicVerbs__()
 		return self.dic_verbs
+
+	def getListVerbs(self):
+		if self.buidVerbs:
+			self.__buildDicVerbs__()
+		list_verbs = {}
+		for id_t in self.dic_verbs:
+			list_verbs[self.dic_verbs[id_t]] = self.dic_verbs[id_t]
+		return list_verbs
 	
 	def printDicTerms(self):
 		for id_t in self.dic_t:
@@ -188,7 +204,7 @@ class ParseXml:
 			print 'Key: '+id_nts
 			print self.dic_nts[id_nts]
 
-	def printNTStructureById (self, id_nts):
+	def printNTStructureById(self, id_nts):
 		if self.buidStructure:
 			self.__buildNonTerminalStructure__()
 		try:
@@ -211,3 +227,21 @@ class ParseXml:
 		for id_verb in self.dic_verbs:
 			print 'Key: '+id_verb
 			print self.dic_verbs[id_verb]
+
+	def printListNouns(self):
+		if self.buidNouns:
+			self.__buildDicNouns__()
+		list_nouns = {}
+		for id_t in self.dic_nouns:
+			list_nouns[self.dic_nouns[id_t]] = self.dic_nouns[id_t]
+		for noun in list_nouns:
+			print noun+', ',
+
+	def printListVerbs(self):
+		if self.buidVerbs:
+			self.__buildDicVerbs__()
+		list_verbs = {}
+		for id_t in self.dic_verbs:
+			list_verbs[self.dic_verbs[id_t]] = self.dic_verbs[id_t]
+		for verb in list_verbs:
+			print verb+', ',
