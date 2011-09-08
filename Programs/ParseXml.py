@@ -2,6 +2,7 @@
 
 import re
 import sys
+import codecs
 
 class ParseXml:
 
@@ -20,7 +21,7 @@ class ParseXml:
 
 	def __buildDics__(self, filename):
 		try:
-			xmlfile = open(filename, 'r')
+			xmlfile = codecs.open(filename, 'r', 'utf-8')
 		except IOError:
 			print 'ERROR: System cannot open the '+filename+' file'
 			sys.exit()
