@@ -2,6 +2,7 @@
 
 import re
 import sys
+import codecs
 
 class ParseCg:
 	def __init__(self, filename):		
@@ -10,7 +11,7 @@ class ParseCg:
 
 	def __buildDic__(self, filename):
 		try:
-			cgfile = open(filename, "r")
+			cgfile = codecs.open(filename, 'r', 'utf-8')
 		except IOError:
 			print 'ERROR: System cannot open the '+filename+' file'
 			sys.exit()
