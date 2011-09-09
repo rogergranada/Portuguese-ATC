@@ -2,6 +2,7 @@
 
 import sys
 import re
+import codecs
 
 class Parameters:
 	def __init__(self):		
@@ -10,7 +11,7 @@ class Parameters:
 
 	def __buildDic__(self):
 		try:
-			file_parameters = open('parameters.cfg', 'r')
+			file_parameters = codecs.open('parameters.cfg', 'r', 'utf-8')
 		except IOError:
 			print 'ERROR: System cannot open the parameters.cfg file'
 			sys.exit()
@@ -28,6 +29,8 @@ class Parameters:
 				self.dic_parameters['mi_precision'] = line.split('=')[1].replace('\n','')
 			if re.match('window_size', line):
 				self.dic_parameters['window_size'] = line.split('=')[1].replace('\n','')
+
+		file_parameters.close()
 
 	def getMaxQtyTerms(self):
 		return self.dic_parameters['max_qty_terms']
