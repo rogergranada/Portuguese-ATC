@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import sys
-import re
+import codecs
 
 class Seeds:
 	def __init__(self):		
@@ -10,7 +10,7 @@ class Seeds:
 
 	def __buildDic__(self):
 		try:
-			file_seeds = open('seeds.txt', 'r')
+			file_seeds = codecs.open('seeds.txt', 'r', 'utf-8')
 		except IOError:
 			print 'ERROR: System cannot open the seeds.txt file'
 			sys.exit()
@@ -19,6 +19,8 @@ class Seeds:
 			if line != '':
 				line = line.replace('\n','')
 				self.dic_seeds[line] = line
+
+		file_seeds.close()
 
 	def getQtySeeds(self):
 		return len(self.dic_seeds)
