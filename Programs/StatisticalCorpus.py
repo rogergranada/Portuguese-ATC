@@ -8,6 +8,7 @@ import codecs
 
 from ParseXml import ParseXml
 from Accents import Accents
+from Parameters import Parameters
 
 class StatisticalCorpus:
 
@@ -16,8 +17,9 @@ class StatisticalCorpus:
 		self.full_corpus = '../Data/Corpus/Statistical/Full/'
 		self.noun_corpus = '../Data/Corpus/Statistical/Noun/'
 		self.dic_accents = {}
-		self.__buildStatisticalCorpus__()
+		self.parameters = Parameters()
 		self.firstLoadFile = True
+		self.__buildStatisticalCorpus__()
 		
 		command = "cat "+self.full_corpus+"*.txt >> "+self.full_corpus+"../FullStatisticalCorpus.txt"
 		os.system(command)
@@ -49,15 +51,14 @@ class StatisticalCorpus:
 				string_nouns = ''
 				while dic_terms.has_key(id_t):
 					while dic_terms.has_key(id_t):
-						#if dic_terms[id_t]['pos'] != 'pu':
-						if not re.match('^(pu|num|conj|art|prp|pron)', dic_terms[id_t]['pos']):
-							lemma = self.__fixAccents__(dic_terms[id_t]['lemma'])
+						if not re.match('^(pu|num|conj|art|prp|pron)', dic_terms[id_t]['pos']) and len(dic_terms[id_t]['lemma']) >= self.parameters.getMinWordSize():
+							lemma = accents.buildCodes(dic_terms[id_t]['lemma'])
 							if dic_nouns.has_key(id_t):
 								string_nouns += lemma+'__N '
 								string_full += lemma+'__N '
 							elif dic_verbs.has_key(id_t):
 								string_nouns += lemma+'__V '
-								string_full += lemma+'__O '
+								string_full += lemma+'__V '
 							else:
 								string_full += lemma+'__O '
 							string_nouns = string_nouns.replace('-', '_')
@@ -67,14 +68,7 @@ class StatisticalCorpus:
 					id_word = 1
 					id_sentence += 1
 					id_t = 's'+str(id_sentence)+'_'+str(id_word)
-				self.__writeCorpusFile__(corpus_filename, string_full, string_nouns)
-
-	def __fixAccents__(self, raw_lemma):
-		for cod in self.dic_accents:
-			if cod in raw_lemma:
-				raw_lemma = raw_lemma.replace(cod, self.dic_accents[cod])
-		return raw_lemma
-		
+				self.__writeCorpusFile__(corpus_filename, string_full, string_nouns)		
 
 	def __writeCorpusFile__(self, corpus_filename, string_full, string_nouns):
 		try:
