@@ -21,6 +21,8 @@ class Parameters:
 				self.dic_parameters['max_qty_terms'] = line.split('=')[1].replace('\n','')
 			if re.match('min_freq_t3', line):
 				self.dic_parameters['min_freq_t3'] = line.split('=')[1].replace('\n','')
+			if re.match('min_word_size', line):
+				self.dic_parameters['min_word_size'] = line.split('=')[1].replace('\n','')
 			if re.match('svd_treshold', line):
 				self.dic_parameters['svd_treshold'] = line.split('=')[1].replace('\n','')
 			if re.match('min_freq_t2', line):
@@ -33,22 +35,25 @@ class Parameters:
 		file_parameters.close()
 
 	def getMaxQtyTerms(self):
-		return self.dic_parameters['max_qty_terms']
+		return int(self.dic_parameters['max_qty_terms'])
 
 	def getMinFreqT3(self):
-		return self.dic_parameters['min_freq_t3']
+		return int(self.dic_parameters['min_freq_t3'])
+
+	def getMinWordSize(self):
+		return int(self.dic_parameters['min_word_size'])
 
 	def getSVDThreshold(self):
-		return self.dic_parameters['svd_treshold']
+		return int(self.dic_parameters['svd_treshold'])
 
 	def getMinFreqT2(self):
-		return self.dic_parameters['min_freq_t2']
+		return int(self.dic_parameters['min_freq_t2'])
 
 	def getMIPrecision(self):
-		return self.dic_parameters['mi_precision']
+		return int(self.dic_parameters['mi_precision'])
 
 	def getWindowSize(self):
-		return self.dic_parameters['window_size']
+		return int(self.dic_parameters['window_size'])
 
 	def getDicParameters(self):
 		return self.dic_parameters
@@ -61,6 +66,9 @@ class Parameters:
 
 	def setMinFreqT3(self, freq):
 		self.dic_parameters['min_freq_t3'] = freq
+
+	def setMinWordSize(self, size):
+		self.dic_parameters['min_word_size'] = size
 
 	def setSVDThreshold(self, threshold):
 		self.dic_parameters['svd_treshold'] = threshold
