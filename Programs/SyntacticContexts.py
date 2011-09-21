@@ -1,17 +1,21 @@
 #!/usr/bin/python
+#-*- coding: utf-8 -*-
 
 import re
+import codecs
 
 from ParseXml import ParseXml
 from ParseCg import ParseCg
+from Parameters import Parameters
 
 class SyntacticContexts:
 
 	def __init__(self, filename):		
 		self.filename_xml = filename+'.xml'
-		self.filename_cg = filename+'.cg'
+		self.filename_cg = filename+'.palavras'
 		self.xml = ParseXml(self.filename_xml)
 		self.cg = ParseCg(self.filename_cg)
+		self.parameters = Parameters()
 
 		self.dic_t_xml = self.xml.getDicTerms()
 		self.dic_t_cg = self.cg.getDicTerms()
@@ -27,7 +31,7 @@ class SyntacticContexts:
 
 	def __extractANRelations__(self):
 		for id_t in self.dic_t_xml:
-			if self.dic_t_xml[id_t]['pos'] == 'n' or self.dic_t_xml[id_t]['pos'] == 'prop':
+			if re.match("^(n|prop)$", self.dic_t_xml[id_t]['pos']) and len(self.dic_t_xml[id_t]['lemma']) >= self.parameters.getMinWordSize():
 				id_sentence = id_t.split("_")[0]
 				id_word = id_t.split("_")[1]
 
@@ -35,7 +39,7 @@ class SyntacticContexts:
 				id_2 = id_sentence+'_'+str((int(id_word) + 2))
 				id_3 = id_sentence+'_'+str((int(id_word) + 3))
 
-				if self.dic_t_xml.has_key(id_3):
+				if self.dic_t_xml.has_key(id_3) and len(self.dic_t_xml[id_3]['lemma']) >= self.parameters.getMinWordSize():
 					ids = self.dic_t_xml[id_t]['pos']+':'+self.dic_t_xml[id_1]['pos']+':'+self.dic_t_xml[id_2]['pos']+':'+self.dic_t_xml[id_3]['pos']
 					if re.match('^(n|prop):prp:(art|num|pron-indef|pron-poss|pu):(n|prop)$', ids) is not None:
 						self.__addElementDicAN__('prep_#'+self.dic_t_xml[id_3]['lemma']+'#'+self.dic_t_xml[id_t]['lemma'])
@@ -43,7 +47,7 @@ class SyntacticContexts:
 					if re.match('^(n|prop):adj:adj:adj$', ids) is not None:
 						self.__addElementDicAN__('adj_#'+self.dic_t_xml[id_3]['lemma']+'#'+self.dic_t_xml[id_t]['lemma'])
 
-				if self.dic_t_xml.has_key(id_2):
+				if self.dic_t_xml.has_key(id_2) and len(self.dic_t_xml[id_2]['lemma']) >= self.parameters.getMinWordSize():
 					ids = self.dic_t_xml[id_t]['pos']+':'+self.dic_t_xml[id_1]['pos']+':'+self.dic_t_xml[id_2]['pos']
 					if re.match('^(n|prop):prp:(n|prop)$', ids) is not None:
 						self.__addElementDicAN__('prep_#'+self.dic_t_xml[id_2]['lemma']+'#'+self.dic_t_xml[id_t]['lemma'])
@@ -51,7 +55,7 @@ class SyntacticContexts:
 					if re.match('^(n|prop):adj:adj$', ids) is not None:
 						self.__addElementDicAN__('adj_#'+self.dic_t_xml[id_2]['lemma']+'#'+self.dic_t_xml[id_t]['lemma'])
 				
-				if self.dic_t_xml.has_key(id_1):
+				if self.dic_t_xml.has_key(id_1) and len(self.dic_t_xml[id_1]['lemma']) >= self.parameters.getMinWordSize():
 					ids = self.dic_t_xml[id_t]['pos']+':'+self.dic_t_xml[id_1]['pos']
 					if re.match('^(n|prop):adj$', ids) is not None:
 						self.__addElementDicAN__('adj_#'+self.dic_t_xml[id_1]['lemma']+'#'+self.dic_t_xml[id_t]['lemma'])
@@ -63,17 +67,17 @@ class SyntacticContexts:
 				id_2 = id_sentence+'_'+str((int(id_word) - 2))
 				id_3 = id_sentence+'_'+str((int(id_word) - 3))
 
-				if self.dic_t_xml.has_key(id_3):
+				if self.dic_t_xml.has_key(id_3) and len(self.dic_t_xml[id_3]['lemma']) >= self.parameters.getMinWordSize():
 					ids = self.dic_t_xml[id_3]['pos']+':'+self.dic_t_xml[id_2]['pos']+':'+self.dic_t_xml[id_1]['pos']+':'+self.dic_t_xml[id_t]['pos']
 					if re.match('^adj:adj:adj:(n|prop)$', ids) is not None:
 						self.__addElementDicAN__('adj_#'+self.dic_t_xml[id_3]['lemma']+'#'+self.dic_t_xml[id_t]['lemma'])
 				
-				if self.dic_t_xml.has_key(id_2):
+				if self.dic_t_xml.has_key(id_2) and len(self.dic_t_xml[id_2]['lemma']) >= self.parameters.getMinWordSize():
 					ids = self.dic_t_xml[id_2]['pos']+':'+self.dic_t_xml[id_1]['pos']+':'+self.dic_t_xml[id_t]['pos']
 					if re.match('^adj:adj:(n|prop)$', ids) is not None:
 						self.__addElementDicAN__('adj_#'+self.dic_t_xml[id_2]['lemma']+'#'+self.dic_t_xml[id_t]['lemma'])
 
-				if self.dic_t_xml.has_key(id_1):
+				if self.dic_t_xml.has_key(id_1) and len(self.dic_t_xml[id_1]['lemma']) >= self.parameters.getMinWordSize():
 					ids = self.dic_t_xml[id_1]['pos']+':'+self.dic_t_xml[id_t]['pos']
 					if re.match('^adj:(n|prop)$', ids) is not None:
 						self.__addElementDicAN__('adj_#'+self.dic_t_xml[id_1]['lemma']+'#'+self.dic_t_xml[id_t]['lemma'])
@@ -89,7 +93,7 @@ class SyntacticContexts:
 	""" 
 	def __extractSVRelations__(self):
 		for id_t in self.dic_t_cg:
-			if (self.dic_t_cg[id_t]['synt'] == '@SUBJ>' or self.dic_t_cg[id_t]['synt'] == '@N<PRED') and re.match("^(n|prop)$", self.dic_t_xml[id_t]['pos']):
+			if re.match("^(@SUBJ>|@N<PRED)$", self.dic_t_cg[id_t]['synt']) and re.match("^(n|prop)$", self.dic_t_xml[id_t]['pos']) and len(self.dic_t_xml[id_t]['lemma']) >= self.parameters.getMinWordSize():
 				id_sentence = id_t.split("_")[0]
 				id_word = id_t.split("_")[1]
 				next_word = int(id_word) + 1
@@ -107,7 +111,7 @@ class SyntacticContexts:
 					next_word += 1
 					id_next_word = id_sentence+'_'+str(next_word)
 
-			if self.dic_t_cg[id_t]['synt'] == '@<SUBJ' and re.match("^(n|prop)$", self.dic_t_xml[id_t]['pos']):
+			if self.dic_t_cg[id_t]['synt'] == '@<SUBJ' and re.match("^(n|prop)$", self.dic_t_xml[id_t]['pos']) and len(self.dic_t_xml[id_t]['lemma']) >= self.parameters.getMinWordSize():
 				id_sentence = id_t.split("_")[0]
 				id_word = id_t.split("_")[1]
 				previous_word = int(id_word) - 1
@@ -136,7 +140,7 @@ class SyntacticContexts:
 	"""
 	def __extractVORelations__(self):
 		for id_t in self.dic_t_cg:
-			if (self.dic_t_cg[id_t]['synt'] == '@<ACC' or self.dic_t_cg[id_t]['synt'] == '@PRED>') and re.match("^(n|prop)$", self.dic_t_xml[id_t]['pos']):
+			if re.match("^(@<ACC|@PRED>)$", self.dic_t_cg[id_t]['synt'])and re.match("^(n|prop)$", self.dic_t_xml[id_t]['pos']) and len(self.dic_t_xml[id_t]['lemma']) >= self.parameters.getMinWordSize():
 				id_sentence = id_t.split("_")[0]
 				id_word = id_t.split("_")[1]
 				previous_word = int(id_word) - 1
@@ -203,7 +207,7 @@ class SyntacticContexts:
 
 	def writeDicAN(self, filename):
 		try:
-			output_an = open(filename, 'w')
+			output_an = codecs.open(filename+'.txt', 'w', 'utf-8')
 			if self.mountANRelations:
 				self.__extractANRelations__()
 				self.mountANRelations = False
@@ -229,7 +233,7 @@ class SyntacticContexts:
 
 	def writeDicSV(self, filename):
 		try:
-			output_sv = open(filename, 'w')
+			output_sv = codecs.open(filename+'.txt', 'w', 'utf-8')
 			if self.mountSVRelations:
 				self.__extractSVRelations__()
 				self.mountSVRelations = False
@@ -255,7 +259,7 @@ class SyntacticContexts:
 
 	def writeDicVO(self, filename):
 		try:
-			output_vo = open(filename, 'w')
+			output_vo = codecs.open(filename+'.txt', 'w', 'utf-8')
 			if self.mountVORelations:
 				self.__extractVORelations__()
 				self.mountVORelations = False
