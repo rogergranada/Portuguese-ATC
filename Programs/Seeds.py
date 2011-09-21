@@ -3,9 +3,12 @@
 import sys
 import codecs
 
+from Accents import Accents
+
 class Seeds:
 	def __init__(self):		
 		self.dic_seeds = {}
+		self.accents = Accents()
 		self.__buildDic__()
 
 	def __buildDic__(self):
@@ -18,6 +21,7 @@ class Seeds:
 		for line in file_seeds:
 			if line != '':
 				line = line.replace('\n','')
+				line = self.accents.buildCodes(line)
 				self.dic_seeds[line] = line
 
 		file_seeds.close()
@@ -26,7 +30,7 @@ class Seeds:
 		return len(self.dic_seeds)
 
 	def getSeeds(self):
-		return self.dic_seeds
+		return sorted(self.dic_seeds.keys())
 
 	def printSeeds(self):
 		print self.dic_seeds
