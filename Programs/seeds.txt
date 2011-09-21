@@ -1,3 +1,5 @@
 medida
 escassez
 elemento
+casinha
+área
