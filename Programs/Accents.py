@@ -20,9 +20,7 @@ class Accents:
 			if line != '':
 				line = line.replace('\n','')
 				character = line.split('=')[0]
-				#print character,' => ',
 				code = line.split('=')[1].replace('\n','')
-				#print code
 				self.dic_accents[character] = code
 
 		file_accents.close()
@@ -39,3 +37,14 @@ class Accents:
 	def printQtyAccents(self):
 		print len(self.dic_accents)
 
+	def buildCodes(self, raw_lemma):
+		for cod in self.dic_accents:
+			if cod in raw_lemma:
+				raw_lemma = raw_lemma.replace(cod, self.dic_accents[cod])
+		return raw_lemma
+
+	def buildAccents(self, coded_lemma):
+		for cod in self.dic_accents:
+			if self.dic_accents[cod] in coded_lemma:
+				coded_lemma = coded_lemma.replace(self.dic_accents[cod], cod)
+		return coded_lemma
