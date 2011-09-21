@@ -47,15 +47,44 @@ class Statistic:
 		print self.dic_mi
 
 	def getDicForTerm(self, term):
-		if self.dic_mi.has_key(term):
+		if self.__existKey__(term):
 			return self.dic_mi[term]
 		else:
 			print 'ERROR: System cannot found the term "'+term+'"'
+			return False
 	
 	def printDicForTerm(self, term):
-		if self.dic_mi.has_key(term):
+		if self.__existKey__(term):
 			print self.dic_mi[term]
 		else:
 			print 'ERROR: System cannot found the term "'+term+'"'
-			
+
+	def getOrderedNounMIForTerm(self, seed):
+		dic_terms = {}
+		if self.__existKey__(seed):
+			for related_term in self.dic_mi[seed]:
+				if self.dic_mi[seed][related_term]['type_2'] == 'N':
+					dic_terms[self.dic_mi[seed][related_term]['true_mi']] = related_term
+			dic_terms_aux = dic_terms
+			return sorted(dic_terms_aux.items(), reverse=True)
+		else:
+			print 'ERROR: System cannot found the term "'+seed+'"'
+			return False
+
+	def getOrderedMIForTerm(self, term):
+		dic_terms = {}
+		if self.__existKey__(term):
+			for related_term in self.dic_mi[term]:
+				dic_terms[self.dic_mi[term][related_term]['true_mi']] = related_term
+			dic_terms_aux = dic_terms
+			return sorted(dic_terms_aux.items(), reverse=True)
+		else:
+			print 'ERROR: System cannot found the term "'+term+'"'
+			return False
+
+	def __existKey__(self, key):
+		if self.dic_mi.has_key(key):
+			return True
+		else:
+			return False
 
