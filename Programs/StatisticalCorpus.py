@@ -16,11 +16,9 @@ class StatisticalCorpus:
 		self.corpus_folder = '../Data/Corpus/Raw/'
 		self.full_corpus = '../Data/Corpus/Statistical/Full/'
 		self.noun_corpus = '../Data/Corpus/Statistical/Noun/'
-		self.dic_accents = {}
 		self.parameters = Parameters()
 		self.firstLoadFile = True
 		self.__buildStatisticalCorpus__()
-		
 		command = "cat "+self.full_corpus+"*.txt >> "+self.full_corpus+"../FullStatisticalCorpus.txt"
 		os.system(command)
 		command = "cat "+self.noun_corpus+"*.txt >> "+self.full_corpus+"../NounStatisticalCorpus.txt"
@@ -34,7 +32,6 @@ class StatisticalCorpus:
 			sys.exit()
 
 		accents = Accents()
-		self.dic_accents = accents.getAccents()
 		for corpus_file in files:
 			if re.match('.*xml$', corpus_file):
 				corpus_filename = corpus_file.split('.')[0]
@@ -51,7 +48,7 @@ class StatisticalCorpus:
 				string_nouns = ''
 				while dic_terms.has_key(id_t):
 					while dic_terms.has_key(id_t):
-						if not re.match('^(pu|num|conj|art|prp|pron)', dic_terms[id_t]['pos']) and len(dic_terms[id_t]['lemma']) >= self.parameters.getMinWordSize():
+						if not re.match('^(pu|num|conj|art|prp|spec)', dic_terms[id_t]['pos']) and (re.search('[$]', dic_terms[id_t]['lemma']) is None) and (len(dic_terms[id_t]['lemma']) >= self.parameters.getMinWordSize()):
 							lemma = accents.buildCodes(dic_terms[id_t]['lemma'])
 							if dic_nouns.has_key(id_t):
 								string_nouns += lemma+'__N '
